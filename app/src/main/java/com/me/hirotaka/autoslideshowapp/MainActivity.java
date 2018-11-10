@@ -3,6 +3,7 @@ package com.me.hirotaka.autoslideshowapp;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,6 +11,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -91,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
                             });
                         }
                     }, 2000, 2000);
-                    mStartButton.setText("一時停止");
+                    mStartButton.setText("停止");
                     mNextButton.setEnabled(false);
                     mBackButton.setEnabled(false);
                 }
@@ -112,6 +115,8 @@ public class MainActivity extends AppCompatActivity {
             case PERMISSIONS_REQUEST_CODE:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     getContentsInfo();
+                } else {
+                    showDialog();
                 }
                 break;
             default:
@@ -165,5 +170,22 @@ public class MainActivity extends AppCompatActivity {
             Uri imageUri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
             mImageView.setImageURI(imageUri);
         }
+    }
+
+    private void showDialog() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("警告");
+        alertDialogBuilder.setMessage("パーミッションを許可しないと、このアプリは使用できません。");
+
+        alertDialogBuilder.setPositiveButton("閉じる", new DialogInterface.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_CODE);
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 }
